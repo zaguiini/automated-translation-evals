@@ -18,56 +18,70 @@ export async function runEval(options: { model: string; limit: number }): Promis
   const dataset = await langfuse.getDataset(DATASET_NAME);
   const items = dataset.items.slice(0, options.limit);
 
-  for (const item of items) {
-    // The dataset input shape was set by uploadDataset.ts:
-    // { msgid, msgctxt, comments, prompt }
-    // expectedOutput is the human baseline msgstr
-    const entry = item.input as Pick<PoEntry, "msgid" | "msgctxt" | "comments"> & { prompt: string };
-    const reference = item.expectedOutput as string;
+  let evaluated = 0;
+  try {
+    for (const item of items) {
+      try {
+        // The dataset input shape was set by uploadDataset.ts:
+        // { msgid, msgctxt, comments, prompt }
+        // expectedOutput is the human baseline msgstr
+        const input = item.input as { msgid: string; msgctxt: string; comments: string; prompt: string };
+        const reference = item.expectedOutput as string;
+        const entry: PoEntry = {
+          msgid: input.msgid,
+          msgctxt: input.msgctxt,
+          comments: input.comments,
+          msgstr: reference,
+        };
 
-    // Create a Langfuse trace for this item
-    const trace = langfuse.trace({
-      name: "translation-eval",
-      input: entry,
-      metadata: { model: options.model },
-    });
+        // Create a Langfuse trace for this item
+        const trace = langfuse.trace({
+          name: "translation-eval",
+          input: entry,
+          metadata: { model: options.model },
+        });
 
-    // Generate translation, logged as a generation span
-    const generation = trace.generation({
-      name: "translate",
-      model: options.model,
-      input: entry.prompt,
-    });
-    const translation = await translate(entry as unknown as PoEntry, options.model);
-    generation.end({ output: translation });
+        // Generate translation, logged as a generation span
+        const generation = trace.generation({
+          name: "translate",
+          model: options.model,
+          input: input.prompt,
+        });
+        const translation = await translate(entry, options.model);
+        generation.end({ output: translation });
 
-    // Compute BLEU and chrF scores
-    const bleu = computeBleu(translation, reference);
-    const chrf = computeChrF(translation, reference);
+        // Compute BLEU and chrF scores
+        const bleu = computeBleu(translation, reference);
+        const chrf = computeChrF(translation, reference);
 
-    // LLM judge
-    const judgeResult = await llmJudge(translation, reference, entry as unknown as PoEntry);
+        // LLM judge
+        const judgeResult = await llmJudge(translation, reference, entry);
 
-    // Link trace to the named dataset run
-    await item.link(trace, runName);
+        // Link trace to the named dataset run
+        await item.link(trace, runName);
 
-    // Upload scores to the trace
-    langfuse.score({ traceId: trace.id, name: "bleu", value: bleu });
-    langfuse.score({ traceId: trace.id, name: "chrf", value: chrf });
-    langfuse.score({
-      traceId: trace.id,
-      name: "accuracy",
-      value: judgeResult.accuracy / 10,
-      comment: judgeResult.comment,
-    });
-    langfuse.score({ traceId: trace.id, name: "fluency", value: judgeResult.fluency / 10 });
+        // Upload scores to the trace
+        langfuse.score({ traceId: trace.id, name: "bleu", value: bleu });
+        langfuse.score({ traceId: trace.id, name: "chrf", value: chrf });
+        langfuse.score({
+          traceId: trace.id,
+          name: "accuracy",
+          value: judgeResult.accuracy / 10,
+          comment: judgeResult.comment,
+        });
+        langfuse.score({ traceId: trace.id, name: "fluency", value: judgeResult.fluency / 10 });
 
-    console.log(
-      `  ✓ [${options.model}] ${String(entry.msgid ?? "").slice(0, 50)} | ` +
-        `BLEU=${bleu.toFixed(2)} chrF=${chrf.toFixed(2)} accuracy=${judgeResult.accuracy} fluency=${judgeResult.fluency}`
-    );
+        console.log(
+          `  ✓ [${options.model}] ${String(entry.msgid ?? "").slice(0, 50)} | ` +
+            `BLEU=${bleu.toFixed(2)} chrF=${chrf.toFixed(2)} accuracy=${judgeResult.accuracy} fluency=${judgeResult.fluency}`
+        );
+        evaluated++;
+      } catch (err) {
+        console.error(`  ✗ Error processing item: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+  } finally {
+    await langfuse.flushAsync();
+    console.log(`\nRun "${runName}" complete. ${evaluated}/${items.length} items evaluated.`);
   }
-
-  await langfuse.flushAsync();
-  console.log(`\nRun "${runName}" complete. ${items.length} items evaluated.`);
 }
