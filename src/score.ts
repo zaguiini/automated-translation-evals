@@ -11,67 +11,6 @@ export interface JudgeResult {
 }
 
 // ---------------------------------------------------------------------------
-// BLEU
-// ---------------------------------------------------------------------------
-
-/**
- * Build a multiset (frequency map) of n-grams from a token array.
- */
-function buildNgramCounts(tokens: string[], n: number): Map<string, number> {
-  const counts = new Map<string, number>();
-  for (let i = 0; i <= tokens.length - n; i++) {
-    const gram = tokens.slice(i, i + n).join(" ");
-    counts.set(gram, (counts.get(gram) ?? 0) + 1);
-  }
-  return counts;
-}
-
-/**
- * Sentence-level BLEU with n-grams 1–4 and standard brevity penalty.
- * Returns a value in [0, 1].
- */
-export function computeBleu(hypothesis: string, reference: string): number {
-  const hypTokens = hypothesis.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  const refTokens = reference.trim().toLowerCase().split(/\s+/).filter(Boolean);
-
-  const logPrecisions: number[] = [];
-
-  for (let n = 1; n <= 4; n++) {
-    // If hypothesis has fewer tokens than n, precision is 0 → BLEU = 0.
-    if (hypTokens.length < n) {
-      return 0;
-    }
-
-    const hypCounts = buildNgramCounts(hypTokens, n);
-    const refCounts = buildNgramCounts(refTokens, n);
-
-    let clippedMatches = 0;
-    for (const [gram, hypCount] of hypCounts) {
-      const refCount = refCounts.get(gram) ?? 0;
-      clippedMatches += Math.min(hypCount, refCount);
-    }
-
-    const totalHypNgrams = hypTokens.length - n + 1;
-    const precision = clippedMatches / totalHypNgrams;
-
-    if (precision === 0) {
-      return 0;
-    }
-
-    logPrecisions.push(Math.log(precision));
-  }
-
-  // Brevity penalty
-  const bp =
-    hypTokens.length >= refTokens.length
-      ? 1
-      : Math.exp(1 - refTokens.length / hypTokens.length);
-
-  const avgLogPrecision = logPrecisions.reduce((a, b) => a + b, 0) / logPrecisions.length;
-  return bp * Math.exp(avgLogPrecision);
-}
-
-// ---------------------------------------------------------------------------
 // chrF
 // ---------------------------------------------------------------------------
 

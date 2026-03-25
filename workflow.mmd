@@ -9,5 +9,5 @@ flowchart LR
 
     PO --> EV["3️⃣ npm run eval -- &lt;po-file&gt; --model &lt;model&gt; [--limit N]"]
     EV --> EV1["AI translates each entry via OpenAI model"]
-    EV1 --> EV2["Scored against human baseline — BLEU · chrF · LLM judge"]
+    EV1 --> EV2["Scored against human baseline — chrF · LLM judge"]
     EV2 --> EV3["Results logged to Langfuse"]

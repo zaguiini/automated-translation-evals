@@ -2,7 +2,7 @@ import { Langfuse } from "langfuse";
 import type { PoEntry, PoMetadata } from "./parsePo.js";
 import { resourceName } from "./language.js";
 import { translate } from "./translate.js";
-import { computeBleu, computeChrF, llmJudge } from "./score.js";
+import { computeChrF, llmJudge } from "./score.js";
 
 const CONCURRENCY = 5;
 
@@ -75,13 +75,11 @@ export async function runEval(options: { model: string; limit?: number; metadata
       generation.end({ output: translation });
       trace.update({ output: translation });
 
-      const bleu = computeBleu(translation, reference);
       const chrf = computeChrF(translation, reference);
       const judgeResult = await llmJudge(translation, reference, entry, options.metadata.language);
 
       await item.link(trace, sessionId);
 
-      langfuse.score({ traceId: trace.id, name: "bleu", value: bleu });
       langfuse.score({ traceId: trace.id, name: "chrf", value: chrf });
       langfuse.score({
         traceId: trace.id,
@@ -94,7 +92,7 @@ export async function runEval(options: { model: string; limit?: number; metadata
       evaluated++;
       console.log(
         `  [session: ${sessionId}] ✓ (${evaluated}/${items.length}) [${options.model}] ${String(entry.msgid ?? "").slice(0, 50)} | ` +
-          `BLEU=${bleu.toFixed(2)} chrF=${chrf.toFixed(2)} accuracy=${(judgeResult.accuracy / 10).toFixed(2)} fluency=${(judgeResult.fluency / 10).toFixed(2)}`
+          `chrF=${chrf.toFixed(2)} accuracy=${(judgeResult.accuracy / 10).toFixed(2)} fluency=${(judgeResult.fluency / 10).toFixed(2)}`
       );
     };
 
