@@ -27,6 +27,7 @@
     "openai": "^6.32.0"
   },
   "devDependencies": {
+    "@types/gettext-parser": "^9.0.0",
     "@types/node": "^22.13.14",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
