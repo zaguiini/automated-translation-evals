@@ -42,4 +42,8 @@ Measures character-level overlap using character n-grams (orders 1–6). Compute
 
 ### Accuracy (LLM-as-Judge)
 
-Uses Claude as an evaluator to rate how faithfully the translation conveys the meaning of the original English string. The judge considers the source text, any developer comments, and the reference translation. Score range: 0–10.
+Uses Claude as an evaluator to rate how faithfully the translation conveys the meaning of the original English string. The judge considers the source text, any developer comments, and the reference translation. Score range: 0–1.
+
+### Fluency (LLM-as-Judge)
+
+Uses Claude as an evaluator to rate how natural and idiomatic the translation sounds to a native speaker, independent of the reference. Score range: 0–1.
