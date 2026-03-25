@@ -6,16 +6,7 @@ import { computeBleu, computeChrF, llmJudge } from "./score.js";
 
 const CONCURRENCY = 5;
 
-function sampleRandom<T>(arr: T[], n: number): T[] {
-  const copy = [...arr];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy.slice(0, n);
-}
-
-export async function runEval(options: { model: string; limit: number; metadata: PoMetadata }): Promise<void> {
+export async function runEval(options: { model: string; limit?: number; metadata: PoMetadata }): Promise<void> {
   const langfuse = new Langfuse({
     publicKey: process.env.LANGFUSE_PUBLIC_KEY,
     secretKey: process.env.LANGFUSE_SECRET_KEY,
@@ -34,10 +25,10 @@ export async function runEval(options: { model: string; limit: number; metadata:
   const prompt = await langfuse.getPrompt(name);
 
   const sessionId = `${options.model}-${new Date().toISOString().slice(0, 16).replace("T", "-")}`;
-  console.log(`[session: ${sessionId}] Starting eval run for ${options.metadata.language} (limit: ${options.limit} items, concurrency: ${CONCURRENCY})...`);
-
   const dataset = await langfuse.getDataset(name);
-  const items = sampleRandom(dataset.items, options.limit);
+  const items = options.limit != null ? dataset.items.slice(0, options.limit) : dataset.items;
+
+  console.log(`[session: ${sessionId}] Starting eval run for ${options.metadata.language} (${options.limit != null ? `limit: ${options.limit}` : "all"} items, concurrency: ${CONCURRENCY})...`);
 
   let evaluated = 0;
   try {

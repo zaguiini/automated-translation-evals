@@ -48,7 +48,7 @@ program
   .command("upload-dataset")
   .description("Parse a .PO file and upload entries as Langfuse dataset")
   .argument("<file>", "Path to the .PO file")
-  .option("--limit <n>", "Max number of entries to upload", limitOption, 5)
+  .option("--limit <n>", "Max number of entries to upload", limitOption)
   .action(async (file: string, options: { limit?: number }) => {
     const { metadata, entries } = readAndParsePo(file);
 
@@ -87,8 +87,8 @@ program
   .description("Run AI translation eval against the Langfuse dataset")
   .argument("<file>", "Path to the .PO file (used to detect target language)")
   .requiredOption("--model <model>", "OpenAI model to use (e.g. gpt-4o, gpt-4o-mini)")
-  .option("--limit <n>", "Max number of dataset items to evaluate", limitOption, 5)
-  .action(async (file: string, options: { model: string; limit: number }) => {
+  .option("--limit <n>", "Max number of dataset items to evaluate", limitOption)
+  .action(async (file: string, options: { model: string; limit?: number }) => {
     const { metadata } = readAndParsePo(file);
 
     try {
