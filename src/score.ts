@@ -173,7 +173,7 @@ Respond with JSON only, no markdown fences: {"accuracy": <0-10>, "fluency": <0-1
 
   const message = await client.messages.create({
     model: JUDGE_MODEL,
-    max_tokens: 256,
+    max_tokens: 512,
     messages: [{ role: "user", content: prompt }],
   });
 

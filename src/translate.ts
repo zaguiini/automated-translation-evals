@@ -15,5 +15,9 @@ export async function translate(entry: PoEntry, model: string): Promise<string> 
       { role: "user", content: buildPromptContent(entry) },
     ],
   });
-  return response.choices[0].message.content?.trim() ?? "";
+  const translation = response.choices[0]?.message?.content?.trim();
+  if (!translation) {
+    throw new Error(`OpenAI returned empty translation (model=${model})`);
+  }
+  return translation;
 }

@@ -12,7 +12,14 @@ export async function runEval(options: { model: string; limit: number }): Promis
     baseUrl: process.env.LANGFUSE_HOST,
   });
 
-  const runName = `${options.model}-${new Date().toISOString().slice(0, 10)}`;
+  const missingVars = ["LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"].filter(
+    (v) => !process.env[v]
+  );
+  if (missingVars.length > 0) {
+    throw new Error(`Missing required environment variables: ${missingVars.join(", ")}`);
+  }
+
+  const runName = `${options.model}-${new Date().toISOString().slice(0, 16).replace("T", "-")}`;
   console.log(`Starting eval run "${runName}" (limit: ${options.limit} items)...`);
 
   const dataset = await langfuse.getDataset(DATASET_NAME);
@@ -25,8 +32,19 @@ export async function runEval(options: { model: string; limit: number }): Promis
         // The dataset input shape was set by uploadDataset.ts:
         // { msgid, msgctxt, comments, prompt }
         // expectedOutput is the human baseline msgstr
-        const input = item.input as { msgid: string; msgctxt: string; comments: string; prompt: string };
-        const reference = item.expectedOutput as string;
+        const input = item.input as Record<string, unknown>;
+        const reference = item.expectedOutput;
+        if (typeof reference !== "string" || !reference) {
+          throw new Error(`Item missing expectedOutput string (got ${JSON.stringify(reference)})`);
+        }
+        if (
+          typeof input?.msgid !== "string" ||
+          typeof input?.msgctxt !== "string" ||
+          typeof input?.comments !== "string" ||
+          typeof input?.prompt !== "string"
+        ) {
+          throw new Error(`Item input has unexpected shape: ${JSON.stringify(input)}`);
+        }
         const entry: PoEntry = {
           msgid: input.msgid,
           msgctxt: input.msgctxt,
@@ -73,7 +91,7 @@ export async function runEval(options: { model: string; limit: number }): Promis
 
         console.log(
           `  ✓ [${options.model}] ${String(entry.msgid ?? "").slice(0, 50)} | ` +
-            `BLEU=${bleu.toFixed(2)} chrF=${chrf.toFixed(2)} accuracy=${judgeResult.accuracy} fluency=${judgeResult.fluency}`
+            `BLEU=${bleu.toFixed(2)} chrF=${chrf.toFixed(2)} accuracy=${(judgeResult.accuracy / 10).toFixed(2)} fluency=${(judgeResult.fluency / 10).toFixed(2)}`
         );
         evaluated++;
       } catch (err) {
