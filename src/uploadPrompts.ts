@@ -16,11 +16,11 @@ export function buildPromptContent(entry: PoEntry): string {
 
 ## Context
 
-${entry.msgctxt || 'No context'}
+${entry.msgctxt || "No context"}
 
 ## Comments
 
-${entry.comments || 'No comments'}
+${entry.comments || "No comments"}
 
 ## English
 
@@ -54,7 +54,7 @@ export async function uploadPrompts(entries: PoEntry[]): Promise<void> {
       labels: ["production"],
     });
 
-    console.log(`  ✓ ${name}`);
+    console.log(`  uploaded: ${name}`);
   }
 
   await langfuse.flushAsync();

@@ -18,9 +18,7 @@ export function parsePo(fileBuffer: Buffer): PoEntry[] {
 
       const extractedComments = translation.comments?.extracted ?? "";
       const msgctxt = translation.msgctxt ?? "";
-      const msgstr = Array.isArray(translation.msgstr)
-        ? translation.msgstr[0]
-        : translation.msgstr ?? "";
+      const msgstr = translation.msgstr[0] ?? "";
 
       entries.push({
         msgid,
