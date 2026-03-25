@@ -1,4 +1,4 @@
-import { Langfuse } from "langfuse";
+import { LangfuseClient } from "@langfuse/client";
 import type { PoMetadata } from "./parsePo.js";
 import { resourceName } from "./language.js";
 
@@ -23,7 +23,7 @@ ${language} translation:`;
 }
 
 export async function uploadPrompt(metadata: PoMetadata): Promise<void> {
-  const langfuse = new Langfuse({
+  const langfuse = new LangfuseClient({
     publicKey: process.env.LANGFUSE_PUBLIC_KEY,
     secretKey: process.env.LANGFUSE_SECRET_KEY,
     baseUrl: process.env.LANGFUSE_HOST,
@@ -33,13 +33,13 @@ export async function uploadPrompt(metadata: PoMetadata): Promise<void> {
 
   console.log(`Uploading prompt "${promptName}" for ${metadata.language}...`);
 
-  await langfuse.createPrompt({
+  await langfuse.api.prompts.create({
     name: promptName,
     prompt: buildPromptTemplate(metadata.language),
     type: "text",
     labels: ["production"],
   });
 
-  await langfuse.flushAsync();
+  await langfuse.shutdown();
   console.log(`  ✓ prompt "${promptName}" uploaded.`);
 }

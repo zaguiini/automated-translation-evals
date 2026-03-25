@@ -6,6 +6,8 @@ const socksProxy = process.env.SOCKS_PROXY;
 
 if (socksProxy) {
   const url = new URL(socksProxy);
+
+  // Patch undici/fetch() — used by Langfuse SDK, OpenAI SDK
   const dispatcher = new Agent({
     connect: async (options, callback) => {
       try {

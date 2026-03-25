@@ -1,7 +1,7 @@
-import { Langfuse } from "langfuse";
+import { LangfuseClient } from "@langfuse/client";
 
 export async function cleanup(): Promise<void> {
-  const langfuse = new Langfuse({
+  const langfuse = new LangfuseClient({
     publicKey: process.env.LANGFUSE_PUBLIC_KEY,
     secretKey: process.env.LANGFUSE_SECRET_KEY,
     baseUrl: process.env.LANGFUSE_HOST,
@@ -45,6 +45,6 @@ export async function cleanup(): Promise<void> {
     page++;
   }
 
-  await langfuse.flushAsync();
+  await langfuse.shutdown();
   console.log(`Cleanup complete. Deleted ${totalDeleted} traces and their associated scores.`);
 }

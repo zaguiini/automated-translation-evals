@@ -1,5 +1,6 @@
 import "dotenv/config";
 import "./proxy.js";
+import "./instrumentation.js";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Command } from "commander";

@@ -36,14 +36,10 @@ Datasets > Dataset > Select runs > Compare
 
 ## How the evaluation methods work
 
-### chrF
+### chrF (local)
 
-Measures character-level overlap using character n-grams (orders 1–6). Computes an F-score with recall-weighted averaging (β=2). Handles morphologically rich languages and minor spelling differences well. Score range: 0–1.
+Measures character-level overlap using character n-grams (orders 1–6). Computes an F-score with recall-weighted averaging (β=2). Handles morphologically rich languages and minor spelling differences well. Score range: 0–1. Computed locally as an inline evaluator during the experiment run.
 
 ### Accuracy (LLM-as-Judge)
 
-Uses Claude as an evaluator to rate how faithfully the translation conveys the meaning of the original English string. The judge considers the source text, any developer comments, and the reference translation. Score range: 0–1.
-
-### Fluency (LLM-as-Judge)
-
-Uses Claude as an evaluator to rate how natural and idiomatic the translation sounds to a native speaker, independent of the reference. Score range: 0–1.
+Uses Claude as an online evaluator during the experiment run to rate how faithfully the translation conveys the meaning of the original English string. The judge considers the source text, any developer comments, and the reference translation. Score range: 0–1.
