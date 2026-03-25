@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { PoEntry } from "./parsePo.js";
 
 const client = new Anthropic();
+const JUDGE_MODEL = "claude-sonnet-4-6";
 
 export interface JudgeResult {
   accuracy: number; // 0–10
@@ -30,8 +31,8 @@ function buildNgramCounts(tokens: string[], n: number): Map<string, number> {
  * Returns a value in [0, 1].
  */
 export function computeBleu(hypothesis: string, reference: string): number {
-  const hypTokens = hypothesis.trim().split(/\s+/).filter(Boolean);
-  const refTokens = reference.trim().split(/\s+/).filter(Boolean);
+  const hypTokens = hypothesis.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const refTokens = reference.trim().toLowerCase().split(/\s+/).filter(Boolean);
 
   const logPrecisions: number[] = [];
 
@@ -171,7 +172,7 @@ Score the AI translation on a scale of 0 to 10 across two dimensions:
 Respond with JSON only, no markdown fences: {"accuracy": <0-10>, "fluency": <0-10>, "comment": "<brief reason>"}`;
 
   const message = await client.messages.create({
-    model: "claude-sonnet-4-6",
+    model: JUDGE_MODEL,
     max_tokens: 256,
     messages: [{ role: "user", content: prompt }],
   });
@@ -200,9 +201,10 @@ Respond with JSON only, no markdown fences: {"accuracy": <0-10>, "fluency": <0-1
   }
 
   const result = parsed as Record<string, unknown>;
-  return {
-    accuracy: result.accuracy as number,
-    fluency: result.fluency as number,
-    comment: result.comment as string,
-  };
+  const acc = result.accuracy as number;
+  const flu = result.fluency as number;
+  if (acc < 0 || acc > 10 || flu < 0 || flu > 10) {
+    throw new Error(`LLM judge returned out-of-range scores: accuracy=${acc}, fluency=${flu}`);
+  }
+  return { accuracy: acc, fluency: flu, comment: result.comment as string };
 }
