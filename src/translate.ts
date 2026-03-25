@@ -2,8 +2,9 @@ import OpenAI from "openai";
 import type { PoEntry } from "./parsePo.js";
 import { buildPromptContent } from "./uploadPrompts.js";
 
+const client = new OpenAI();
+
 export async function translate(entry: PoEntry, model: string): Promise<string> {
-  const client = new OpenAI();
   const response = await client.chat.completions.create({
     model,
     messages: [
