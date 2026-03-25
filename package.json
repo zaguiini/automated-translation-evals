@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "tsx src/cli.ts upload",
+    "cleanup": "tsx src/cli.ts cleanup",
+    "upload-prompt": "tsx src/cli.ts upload-prompt",
+    "upload-dataset": "tsx src/cli.ts upload-dataset",
     "eval": "tsx src/cli.ts eval"
   },
   "repository": {
@@ -25,7 +27,9 @@
     "dotenv": "^16.4.7",
     "gettext-parser": "^8.0.0",
     "langfuse": "^3.37.1",
-    "openai": "^6.32.0"
+    "openai": "^6.32.0",
+    "socks": "^2.8.7",
+    "undici": "^7.24.5"
   },
   "devDependencies": {
     "@types/gettext-parser": "^9.0.0",

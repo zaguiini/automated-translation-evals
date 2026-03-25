@@ -1,27 +1,30 @@
 import { Langfuse } from "langfuse";
-import type { PoEntry } from "./parsePo.js";
-import { buildPromptContent } from "./uploadPrompts.js";
+import type { PoEntry, PoMetadata } from "./parsePo.js";
+import { resourceName } from "./language.js";
 
-const DATASET_NAME = "translation-evals-pt-br";
-
-export async function uploadDataset(entries: PoEntry[]): Promise<void> {
+export async function uploadDataset(entries: PoEntry[], metadata: PoMetadata, limit?: number): Promise<void> {
   const langfuse = new Langfuse({
     publicKey: process.env.LANGFUSE_PUBLIC_KEY,
     secretKey: process.env.LANGFUSE_SECRET_KEY,
     baseUrl: process.env.LANGFUSE_HOST,
   });
 
+  const datasetName = resourceName(metadata);
+  const selected = limit ? entries.slice(0, limit) : entries;
+
+  console.log('Starting upload of dataset...')
+
   await langfuse.createDataset({
-    name: DATASET_NAME,
+    name: datasetName,
     description:
-      "Brazilian Portuguese translation evaluation dataset with human baselines",
+      `${metadata.language} translation evaluation dataset for ${metadata.projectId} with human baselines`,
   });
 
   console.log(
-    `Uploading ${entries.length} dataset items to "${DATASET_NAME}"...`
+    `Uploading ${selected.length} dataset items to "${datasetName}"...`
   );
 
-  for (const entry of entries) {
+  for (const entry of selected) {
     if (!entry.msgstr) {
       console.warn(
         `Skipping entry with empty baseline translation: "${entry.msgid}"`
@@ -30,12 +33,11 @@ export async function uploadDataset(entries: PoEntry[]): Promise<void> {
     }
 
     await langfuse.createDatasetItem({
-      datasetName: DATASET_NAME,
+      datasetName: datasetName,
       input: {
         msgid: entry.msgid,
         msgctxt: entry.msgctxt,
         comments: entry.comments,
-        prompt: buildPromptContent(entry),
       },
       expectedOutput: entry.msgstr,
     });

@@ -17,28 +17,6 @@ msgctxt "wpcomPushNotificationsBenefitsViewModel.setupDescription"
 msgid "You’re one step away from getting notifications for new orders, reviews and more."
 msgstr "Você está a um passo de receber notificações de novos pedidos, avaliações e muito mais."
 
-#. Net sales title on the watch store stats screen.
-msgctxt "watch.mystore.netSales.title"
-msgid "Net sales"
-msgstr "Vendas líquidas"
-
-#. Net sales title label for the store info widget — shows revenue excluding
-#. taxes, shipping, and fees.
-msgctxt "storeWidgets.storeInfoRectangularWidget.netSales"
-msgid "Net sales"
-msgstr "Vendas líquidas"
-
-#. Net sales title label for the store info widget — shows revenue excluding
-#. taxes, shipping, and fees.
-msgctxt "storeWidgets.infoView.netSales"
-msgid "Net sales"
-msgstr "Vendas líquidas"
-
-#. Value for the y-Axis of the store stats chart on the Dashboard screen
-msgctxt "storeStatsChart.yValueNetSales"
-msgid "Net sales"
-msgstr "Vendas líquidas"
-
 #. Net sales stat label on dashboard — shows revenue excluding taxes,
 #. shipping, and fees.
 msgctxt "storePerformanceView.netSales"

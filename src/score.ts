@@ -144,9 +144,10 @@ export function computeChrF(
 export async function llmJudge(
   hypothesis: string,
   reference: string,
-  entry: PoEntry
+  entry: PoEntry,
+  language: string
 ): Promise<JudgeResult> {
-  const prompt = `You are evaluating a Brazilian Portuguese translation of an English UI string from the WooCommerce iOS app.
+  const prompt = `You are evaluating a ${language} translation of an English UI string.
 
 ## Original English
 ${entry.msgid}
@@ -167,7 +168,7 @@ ${hypothesis}
 
 Score the AI translation on a scale of 0 to 10 across two dimensions:
 - accuracy: How faithfully does it convey the meaning of the English source?
-- fluency: How natural and idiomatic is the Brazilian Portuguese?
+- fluency: How natural and idiomatic is the ${language}?
 
 Respond with JSON only, no markdown fences: {"accuracy": <0-10>, "fluency": <0-10>, "comment": "<brief reason>"}`;
 
