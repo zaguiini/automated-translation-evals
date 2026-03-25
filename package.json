@@ -8,7 +8,8 @@
     "cleanup": "tsx src/cli.ts cleanup",
     "upload-prompt": "tsx src/cli.ts upload-prompt",
     "upload-dataset": "tsx src/cli.ts upload-dataset",
-    "eval": "tsx src/cli.ts eval"
+    "eval": "tsx src/cli.ts eval",
+    "generate-diagram": "node scripts/generate-diagram.mjs"
   },
   "repository": {
     "type": "git",
