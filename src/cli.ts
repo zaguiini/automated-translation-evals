@@ -50,15 +50,17 @@ program
   .command("eval")
   .description("Run AI translation eval against the Langfuse dataset")
   .requiredOption("--model <model>", "OpenAI model to use (e.g. gpt-4o, gpt-4o-mini)")
-  .option("--limit <n>", "Max number of dataset items to evaluate", "5")
-  .action(async (options: { model: string; limit: string }) => {
+  .option("--limit <n>", "Max number of dataset items to evaluate", (v) => {
+    const n = parseInt(v, 10);
+    if (isNaN(n) || n < 1) {
+      console.error("Error: --limit must be a positive integer.");
+      process.exit(1);
+    }
+    return n;
+  }, 5)
+  .action(async (options: { model: string; limit: number }) => {
     try {
-      const limit = parseInt(options.limit, 10);
-      if (isNaN(limit) || limit < 1) {
-        console.error("Error: --limit must be a positive integer.");
-        process.exit(1);
-      }
-      await runEval({ model: options.model, limit });
+      await runEval({ model: options.model, limit: options.limit });
     } catch (err) {
       console.error(`Error running eval: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
