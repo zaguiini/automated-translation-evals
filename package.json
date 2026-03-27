@@ -33,12 +33,12 @@
     "openai": "^6.32.0",
     "socks": "^2.8.7",
     "socks-proxy-agent": "^9.0.0",
-    "undici": "^7.24.5"
+    "undici": "^7.24.5",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
   },
   "devDependencies": {
     "@types/gettext-parser": "^9.0.0",
-    "@types/node": "^22.13.14",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.2"
+    "@types/node": "^22.13.14"
   }
 }
