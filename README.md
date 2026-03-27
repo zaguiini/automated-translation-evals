@@ -18,6 +18,12 @@ Follow these steps in sequence.
 2. Choose a language
 3. Scroll and click "Export", verify that the PO format is selected
 
+This is not specific to Automattic's projects. Any PO file can be used as long as it has the following headers:
+
+- Language: `<language>`
+- Project-Id-Version: `<project-id>`
+- PO-Revision-Date: `<revision-date>`
+
 ### Upload the AI translation prompt
 
 ```
