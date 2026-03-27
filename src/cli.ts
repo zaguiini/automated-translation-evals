@@ -6,7 +6,7 @@ import { resolve } from "node:path";
 import { Command } from "commander";
 import { parsePo } from "./parsePo.js";
 import { uploadDataset } from "./uploadDataset.js";
-import { uploadPrompt } from "./uploadPrompts.js";
+import { uploadPrompt } from "./uploadPrompt.js";
 import { runEval } from "./runEval.js";
 
 const program = new Command();
@@ -69,12 +69,9 @@ program
 program
   .command("upload-prompt")
   .description("Upload the translation prompt template to Langfuse")
-  .argument("<file>", "Path to the .PO file (used to detect target language)")
-  .action(async (file: string) => {
-    const { metadata } = readAndParsePo(file);
-
+  .action(async () => {
     try {
-      await uploadPrompt(metadata);
+      await uploadPrompt();
       console.log("Done.");
     } catch (err) {
       console.error(`Error uploading prompt: ${err instanceof Error ? err.message : String(err)}`);

@@ -4,6 +4,7 @@ import { resourceName } from "./language.js";
 import { translate } from "./translate.js";
 import { computeChrF } from "./score.js";
 import { sdk } from "./instrumentation.js";
+import { PROMPT_NAME } from "./uploadPrompt.js";
 
 const CONCURRENCY = 5;
 
@@ -22,7 +23,7 @@ export async function runEval(options: { model: string; limit?: number; metadata
   }
 
   const name = resourceName(options.metadata);
-  const prompt = await langfuse.prompt.get(name);
+  const prompt = await langfuse.prompt.get(PROMPT_NAME);
   const dataset = await langfuse.dataset.get(name);
 
   if (options.limit != null) {
@@ -32,28 +33,26 @@ export async function runEval(options: { model: string; limit?: number; metadata
   const runName = `${options.model}-${new Date().toISOString().slice(0, 16).replace("T", "-")}`;
 
   console.log(
-    `Starting experiment "${runName}" for ${options.metadata.language} ` +
-      `(${dataset.items.length} items, concurrency: ${CONCURRENCY})...`
+    `Starting experiment "${runName}" (${dataset.items.length} items, concurrency: ${CONCURRENCY})...`
   );
-
-  const { language } = options.metadata;
 
   const result = await dataset.runExperiment({
     name: runName,
     runName,
-    description: `${language} translation eval with ${options.model}`,
     metadata: { model: options.model },
     maxConcurrency: CONCURRENCY,
 
-    task: async ({ input }) => {
+    task: async ({ input, metadata: itemMetadata }) => {
+      const metadata = itemMetadata as { language: string };
       const fields = input as Record<string, string>;
       const compiledPrompt = prompt.compile({
+        language: metadata.language,
         msgid: fields.msgid,
         msgctxt: fields.msgctxt || "No context",
         comments: fields.comments || "No comments",
       });
 
-      return translate(compiledPrompt, options.model, language);
+      return translate(compiledPrompt, options.model, metadata.language);
     },
 
     evaluators: [

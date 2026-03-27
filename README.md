@@ -21,7 +21,7 @@ Follow these steps in sequence.
 ### Upload the AI translation prompt
 
 ```
-npm run upload-prompt -- <po-file>
+npm run upload-prompt
 ```
 
 This is the reference prompt used to generate the AI translations for each dataset item. You can see it in the [uploadPrompts](./src/uploadPrompts.ts) file.
