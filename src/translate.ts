@@ -1,17 +1,7 @@
 import OpenAI from "openai";
+import { observeOpenAI } from "@langfuse/openai";
 
-const client = new OpenAI();
-
-export interface TranslationResult {
-  text: string;
-  usage?: {
-    input: number;
-    output: number;
-    total: number;
-  };
-}
-
-export async function translate(prompt: string, model: string, language: string): Promise<TranslationResult> {
+export async function translate(prompt: string, model: string, language: string): Promise<string> {
   const messages: OpenAI.ChatCompletionMessageParam[] = [
     {
       role: "system",
@@ -20,21 +10,12 @@ export async function translate(prompt: string, model: string, language: string)
     { role: "user", content: prompt },
   ];
 
-  const response = await client.chat.completions.create({ model, messages });
+  const response = await observeOpenAI(new OpenAI()).chat.completions.create({ model, messages });
 
   const text = response.choices[0]?.message?.content?.trim();
   if (!text) {
     throw new Error(`OpenAI returned empty translation (model=${model})`);
   }
 
-  return {
-    text,
-    usage: response.usage
-      ? {
-          input: response.usage.prompt_tokens,
-          output: response.usage.completion_tokens,
-          total: response.usage.total_tokens,
-        }
-      : undefined,
-  };
+  return text;
 }

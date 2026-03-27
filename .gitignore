@@ -1,4 +1,5 @@
 node_modules
 *.po
 .worktrees
-.env
+.env*
+!.env.example

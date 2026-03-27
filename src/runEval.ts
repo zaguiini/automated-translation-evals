@@ -1,5 +1,4 @@
 import { LangfuseClient } from "@langfuse/client";
-import { startActiveObservation } from "@langfuse/tracing";
 import type { PoMetadata } from "./parsePo.js";
 import { resourceName } from "./language.js";
 import { translate } from "./translate.js";
@@ -31,82 +30,45 @@ export async function runEval(options: { model: string; limit?: number; metadata
   }
 
   const runName = `${options.model}-${new Date().toISOString().slice(0, 16).replace("T", "-")}`;
-  const { language } = options.metadata;
 
   console.log(
-    `Starting experiment "${runName}" for ${language} ` +
+    `Starting experiment "${runName}" for ${options.metadata.language} ` +
       `(${dataset.items.length} items, concurrency: ${CONCURRENCY})...`
   );
 
-  const scores: number[] = [];
-  let completed = 0;
+  const { language } = options.metadata;
 
-  for (let i = 0; i < dataset.items.length; i += CONCURRENCY) {
-    const batch = dataset.items.slice(i, i + CONCURRENCY);
+  const result = await dataset.runExperiment({
+    name: runName,
+    runName,
+    description: `${language} translation eval with ${options.model}`,
+    metadata: { model: options.model },
+    maxConcurrency: CONCURRENCY,
 
-    await Promise.all(
-      batch.map(async (item) => {
-        const fields = item.input as Record<string, string>;
-        const compiledPrompt = prompt.compile({
-          msgid: fields.msgid,
-          msgctxt: fields.msgctxt || "No context",
-          comments: fields.comments || "No comments",
-        });
+    task: async ({ input }) => {
+      const fields = input as Record<string, string>;
+      const compiledPrompt = prompt.compile({
+        msgid: fields.msgid,
+        msgctxt: fields.msgctxt || "No context",
+        comments: fields.comments || "No comments",
+      });
 
-        const { text, traceId, observationId } = await startActiveObservation(
-          "translate",
-          async (generation) => {
-            generation.update({
-              model: options.model,
-              input: compiledPrompt,
-            });
+      return translate(compiledPrompt, options.model, language);
+    },
 
-            const result = await translate(compiledPrompt, options.model, language);
+    evaluators: [
+      async ({ output, expectedOutput }) => ({
+        name: "chrf",
+        value: computeChrF(output as string, expectedOutput as string),
+      }),
+    ],
+  });
 
-            generation.update({
-              output: result.text,
-              ...(result.usage && { usageDetails: result.usage }),
-            });
-
-            return { text: result.text, traceId: generation.traceId, observationId: generation.id };
-          },
-          { asType: "generation" },
-        );
-
-        await langfuse.api.datasetRunItems.create({
-          runName,
-          runDescription: `${language} translation eval with ${options.model}`,
-          metadata: { model: options.model },
-          datasetItemId: item.id,
-          traceId,
-          observationId,
-        });
-
-        const score = computeChrF(text, item.expectedOutput as string);
-        scores.push(score);
-
-        langfuse.score.create({
-          traceId,
-          name: "chrf",
-          value: score,
-        });
-
-        completed++;
-        console.log(`  [${completed}/${dataset.items.length}] chrf=${score.toFixed(4)}`);
-      })
-    );
-  }
+  console.log(await result.format());
 
   try {
     await sdk.shutdown();
   } catch {
     console.warn("Warning: OTel span flush timed out. Traces may appear in Langfuse with a short delay.");
   }
-
-  await langfuse.score.flush();
-
-  const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-  console.log(`\nExperiment "${runName}" complete.`);
-  console.log(`  Items: ${scores.length}`);
-  console.log(`  Avg chrF: ${avg.toFixed(4)}`);
 }
