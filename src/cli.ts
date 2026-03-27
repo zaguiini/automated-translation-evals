@@ -8,7 +8,6 @@ import { parsePo } from "./parsePo.js";
 import { uploadDataset } from "./uploadDataset.js";
 import { uploadPrompt } from "./uploadPrompts.js";
 import { runEval } from "./runEval.js";
-import { cleanup } from "./cleanup.js";
 
 const program = new Command();
 
@@ -96,18 +95,6 @@ program
       await runEval({ model: options.model, limit: options.limit, metadata });
     } catch (err) {
       console.error(`Error running eval: ${err instanceof Error ? err.message : String(err)}`);
-      process.exit(1);
-    }
-  });
-
-program
-  .command("cleanup")
-  .description("Delete all traces and scores from the Langfuse project")
-  .action(async () => {
-    try {
-      await cleanup();
-    } catch (err) {
-      console.error(`Error during cleanup: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
     }
   });
