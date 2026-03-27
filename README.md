@@ -30,7 +30,7 @@ This is not specific to Automattic's projects. Any PO file can be used as long a
 npm run upload-prompt
 ```
 
-This is the reference prompt used to generate the AI translations for each dataset item. You can see it in the [uploadPrompts](./src/uploadPrompts.ts) file.
+This is the reference prompt used to generate the AI translations for each dataset item. You can see it in the [uploadPrompt](./src/uploadPrompt.ts) file.
 
 ### Upload the original and human translations dataset
 
