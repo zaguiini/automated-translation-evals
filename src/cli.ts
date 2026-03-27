@@ -84,12 +84,11 @@ program
   .description("Run AI translation eval against the Langfuse dataset")
   .argument("<file>", "Path to the .PO file (used to detect target language)")
   .requiredOption("--model <model>", "OpenAI model to use (e.g. gpt-4o, gpt-4o-mini)")
-  .option("--limit <n>", "Max number of dataset items to evaluate", limitOption)
-  .action(async (file: string, options: { model: string; limit?: number }) => {
+  .action(async (file: string, options: { model: string }) => {
     const { metadata } = readAndParsePo(file);
 
     try {
-      await runEval({ model: options.model, limit: options.limit, metadata });
+      await runEval({ model: options.model, metadata });
     } catch (err) {
       console.error(`Error running eval: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);

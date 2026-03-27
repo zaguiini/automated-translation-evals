@@ -8,7 +8,7 @@ import { PROMPT_NAME } from "./uploadPrompt.js";
 
 const CONCURRENCY = 5;
 
-export async function runEval(options: { model: string; limit?: number; metadata: PoMetadata }): Promise<void> {
+export async function runEval(options: { model: string; metadata: PoMetadata }): Promise<void> {
   const langfuse = new LangfuseClient({
     publicKey: process.env.LANGFUSE_PUBLIC_KEY,
     secretKey: process.env.LANGFUSE_SECRET_KEY,
@@ -25,10 +25,6 @@ export async function runEval(options: { model: string; limit?: number; metadata
   const name = resourceName(options.metadata);
   const prompt = await langfuse.prompt.get(PROMPT_NAME);
   const dataset = await langfuse.dataset.get(name);
-
-  if (options.limit != null) {
-    dataset.items = dataset.items.slice(0, options.limit);
-  }
 
   const runName = `${options.model}-${new Date().toISOString().slice(0, 16).replace("T", "-")}`;
 

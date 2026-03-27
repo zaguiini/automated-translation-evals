@@ -93,7 +93,7 @@ Click "Execute". Once that's done, you can run the evaluations.
 ### Run evaluations
 
 ```
-npm run eval -- <po-file> --model <model> [--limit N]
+npm run eval -- <po-file> --model <model>
 ```
 
 ## Visualization

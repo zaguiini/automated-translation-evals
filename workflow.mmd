@@ -1,13 +1,15 @@
-flowchart LR
-    PO["📄 .po file"]
+flowchart TD
+    subgraph setup [" "]
+        direction LR
+        PO["📄 .po file\n(from GlotPress)"] --> UP["1️⃣ Upload prompt\nnpm run upload-prompt"] --> UD["2️⃣ Upload dataset\nnpm run upload-dataset -- &lt;po-file&gt; [--limit N]"]
+    end
 
-    PO --> UP["1️⃣ npm run upload-prompt -- &lt;po-file&gt;"]
-    UP --> UP1["Prompt template stored in Langfuse"]
+    subgraph run [" "]
+        direction LR
+        CFG["3️⃣ Configure LLM-as-Judge\n(in Langfuse UI)"] --> EV["4️⃣ Run eval\nnpm run eval -- &lt;po-file&gt; --model &lt;model&gt;"]
+    end
 
-    PO --> UD["2️⃣ npm run upload-dataset -- &lt;po-file&gt; [--limit N]"]
-    UD --> UD1["Human translations uploaded as baseline dataset in Langfuse"]
+    UD --> CFG
 
-    PO --> EV["3️⃣ npm run eval -- &lt;po-file&gt; --model &lt;model&gt; [--limit N]"]
-    EV --> EV1["AI translates each entry via OpenAI model"]
-    EV1 --> EV2["Scored against human baseline — chrF · LLM judge"]
-    EV2 --> EV3["Results logged to Langfuse"]
+    style setup fill:none,stroke:none
+    style run fill:none,stroke:none
