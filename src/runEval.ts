@@ -6,8 +6,6 @@ import { computeChrF } from "./score.js";
 import { sdk } from "./instrumentation.js";
 import { PROMPT_NAME } from "./uploadPrompt.js";
 
-const CONCURRENCY = 5;
-
 export async function runEval(options: { model: string; metadata: PoMetadata }): Promise<void> {
   const langfuse = new LangfuseClient({
     publicKey: process.env.LANGFUSE_PUBLIC_KEY,
@@ -29,14 +27,13 @@ export async function runEval(options: { model: string; metadata: PoMetadata }):
   const runName = `${options.model}-${new Date().toISOString().slice(0, 16).replace("T", "-")}`;
 
   console.log(
-    `Starting experiment "${runName}" (${dataset.items.length} items, concurrency: ${CONCURRENCY})...`
+    `Starting experiment "${runName}" (${dataset.items.length} items)...`
   );
 
   const result = await dataset.runExperiment({
     name: runName,
     runName,
     metadata: { model: options.model },
-    maxConcurrency: CONCURRENCY,
 
     task: async ({ input, metadata: itemMetadata }) => {
       const metadata = itemMetadata as { language: string };
